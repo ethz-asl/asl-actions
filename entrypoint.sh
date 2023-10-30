@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # Nuke it!
-rm -rf .*
+rm -rf ~/*
