@@ -43,4 +43,4 @@ jobs:
         rosdep install --from-paths src --ignore-src -y --rosdistro noetic
         catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
         catkin build --continue toy_example_package
-     shell: bash
+      shell: bash
