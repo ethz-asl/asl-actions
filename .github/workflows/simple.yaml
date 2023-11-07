@@ -35,7 +35,7 @@ jobs:
       shell: bash
     - name: Build test
       run: |
-        cd ${HOME}/catkin_ws
+        cd ${GITHUB_WORKSPACE}/catkin_ws
         catkin init
         catkin config --extend "/opt/ros/noetic"
         catkin config --merge-devel
