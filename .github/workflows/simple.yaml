@@ -52,8 +52,11 @@ jobs:
         catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
       shell: bash
     - name: Catkin build
-      # You can also do one-liners for run.
-      run: catkin build --continue toy_example_package
+      # The working directory is reset for each individual run command, so just
+      # be aware!
+      run: |
+        cd ${GITHUB_WORKSPACE}/catkin_ws
+        catkin build --continue toy_example_package
       shell: bash
     - name: Get a fortune from a cow
       # Replace this with a testing script or anything else you need to do.
