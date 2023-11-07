@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     # This will now use the container we build above! The "needs" specifies that
     # this must be populated and finished by the other job before we can run.
-    container: ${{ needs.build-docker.outputs.docker_image_name }}
+    container: ${{ needs.docker.outputs.docker_image_name }}
     steps:
     # Name is optional, uses: specify which ACTION is used (basically github
     # macros). You can write your own! Use with: to specify extra parameters.
