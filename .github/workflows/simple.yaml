@@ -26,14 +26,22 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
       with:
+        # This path is relative to ${GITHUB_WORKSPACE}. You can also use
+        # "/${HOME}/" if you want but be sure to have the leading slash.
         path: catkin_ws/src/toy_example_package
     - name: Install catkin-tools on Noetic
+      # This, well, makes sure you have catkin tools installed.
       run: |
         apt update && apt install -y python3-pip
         pip3 install osrf-pycommon
         apt update && apt install -y python3-wstool python3-catkin-tools
       shell: bash
-    - name: Build test
+    - name: Install dependencies
+      # Replace this with your actual deps. But cowsay is fun.
+      run: |
+        apt update && apt install -y fortune-mod cowsay
+      shell: bash
+    - name: Setup workspace & install ROS dependencies
       run: |
         cd ${GITHUB_WORKSPACE}/catkin_ws
         catkin init
@@ -42,5 +50,14 @@ jobs:
         rosdep update
         rosdep install --from-paths src --ignore-src -y --rosdistro noetic
         catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
-        catkin build --continue toy_example_package
       shell: bash
+    - name: Catkin build
+      # You can also do one-liners for run.
+      run: catkin build --continue toy_example_package
+      shell: bash
+    - name: Get a fortune from a cow
+      # Replace this with a testing script or anything else you need to do.
+      run: |
+        fortune | cowsay
+      shell: bash
+
