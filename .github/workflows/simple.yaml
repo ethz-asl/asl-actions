@@ -23,10 +23,10 @@ jobs:
     steps:
     # Name is optional, uses: specify which ACTION is used (basically github
     # macros). You can write your own! Use with: to specify extra parameters.
-    - name: Check out depository
+    - name: Check out repository
       uses: actions/checkout@v3
       with:
-        path: ${HOME}/catkin_ws/src/toy_example_package
+        path: catkin_ws/src/toy_example_package
     #- name: Install catkin-tools on Noetic
     #  run: |
     #    apt update && apt install -y python3-pip
