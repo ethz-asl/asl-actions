@@ -39,7 +39,7 @@ jobs:
     - name: Install dependencies
       # Replace this with your actual deps. But cowsay is fun.
       run: |
-        apt update && apt install -y fortune-mod cowsay
+        apt update && apt install -y fortune cowsay
       shell: bash
     - name: Setup workspace & install ROS dependencies
       run: |
@@ -60,7 +60,6 @@ jobs:
       shell: bash
     - name: Get a fortune from a cow
       # Replace this with a testing script or anything else you need to do.
-      run: |
-        fortune | cowsay
+      run: /usr/games/fortune | /usr/games/cowsay
       shell: bash
 
