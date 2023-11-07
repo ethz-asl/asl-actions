@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>toy_example_package</name>
+  <version>0.0.0</version>
+  <description>Toy example package for Github Actions workflows.</description>
+
+  <maintainer email="oelena@ethz.ch">Helen Oleynikova</maintainer>
+
+  <license>BSD</license>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>

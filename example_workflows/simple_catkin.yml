@@ -1,0 +1,57 @@
+name: Build and Test Catkin Package
+on:
+  push:
+    # Will trigger on MERGES (or pushes) to main branch.
+    branches:
+    - 'main'
+  pull_request:
+    # Will ALSO trigger any time a PR is opened merging to main.
+    # Specify '*' here to merge on PRs being opened against ANY branch.
+    branches:
+    - 'main'
+
+jobs:
+  # The name of the job is "build". All jobs run in SEPARATE containers, so
+  # they may run on separate machines and have the workspace wiped inbetween.
+  build:
+    # Run on a github-hosted runner. To specify our own, select:
+    # [self-hosted, linux] instead.
+    runs-on: ubuntu-latest
+    # This is the docker container that the image will run in. This is 20.04
+    # with ros-noetic-desktop meta-package.
+    container: osrf/ros:noetic-desktop
+    steps:
+    # Name is optional, uses: specify which ACTION is used (basically github
+    # macros). You can write your own! Use with: to specify extra parameters.
+    - name: Check out depository
+    - uses: actions/checkout@v3
+      with:
+        path: ${HOME}/catkin_ws/src/my_package_name
+        submodules: recursive
+    - name: Install catkin-tools on Noetic
+      run: |
+        apt update && apt install -y python3-pip
+        pip3 install osrf-pycommon
+        apt update && apt install -y python3-wstool python3-catkin-tools
+    - name: Install Dependencies
+      run: |
+        $GITHUB_WORKSPACE/install/prepare-jenkins-slave.sh
+      shell: bash
+    - name: Build test
+      working-directory:
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        apt update
+        apt install -y autoconf libtool git qt5-default
+        mkdir -p ${HOME}/catkin_ws/src;
+        cd ${HOME}/catkin_ws
+        catkin init
+        catkin config --extend "/opt/ros/${{matrix.config.rosdistro}}"
+        catkin config --merge-devel
+        cd ${HOME}/catkin_ws
+        rosdep update
+        rosdep install --from-paths src --ignore-src -y --rosdistro noetic
+        catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
+        catkin build --continue my_package_name
+      shell: bash
