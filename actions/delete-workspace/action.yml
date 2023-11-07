@@ -1,0 +1,8 @@
+# action.yml
+name: 'Clean Up State'
+description: 'Clean up the workspace state before and/or after running.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+

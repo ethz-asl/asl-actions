@@ -1,0 +1,65 @@
+name: Simple Build
+on:
+  push:
+    # Will trigger on MERGES (or pushes) to main branch.
+    branches:
+    - 'main'
+  pull_request:
+    # Will ALSO trigger any time a PR is opened merging to main.
+    # Specify '*' here to merge on PRs being opened against ANY branch.
+    branches:
+    - 'main'
+
+jobs:
+  # The name of the job is "build". All jobs run in SEPARATE containers, so
+  # they may run on separate machines and have the workspace wiped inbetween.
+  build:
+    # Run on a github-hosted runner. To specify our own, select:
+    # [self-hosted, linux] instead.
+    runs-on: ubuntu-latest
+    # This is the docker container that the image will run in. This is 20.04
+    # with ros-noetic-desktop meta-package.
+    container: osrf/ros:noetic-desktop
+    steps:
+    # Name is optional, uses: specify which ACTION is used (basically github
+    # macros). You can write your own! Use with: to specify extra parameters.
+    - name: Check out repository
+      uses: actions/checkout@v3
+      with:
+        # This path is relative to ${GITHUB_WORKSPACE}. You can also use
+        # "/${HOME}/" if you want but be sure to have the leading slash.
+        path: catkin_ws/src/toy_example_package
+    - name: Install catkin-tools on Noetic
+      # This, well, makes sure you have catkin tools installed.
+      run: |
+        apt update && apt install -y python3-pip
+        pip3 install osrf-pycommon
+        apt update && apt install -y python3-wstool python3-catkin-tools
+      shell: bash
+    - name: Install dependencies
+      # Replace this with your actual deps. But cowsay is fun.
+      run: |
+        apt update && apt install -y fortune cowsay
+      shell: bash
+    - name: Setup workspace & install ROS dependencies
+      run: |
+        cd ${GITHUB_WORKSPACE}/catkin_ws
+        catkin init
+        catkin config --extend "/opt/ros/noetic"
+        catkin config --merge-devel
+        rosdep update
+        rosdep install --from-paths src --ignore-src -y --rosdistro noetic
+        catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
+      shell: bash
+    - name: Catkin build
+      # The working directory is reset for each individual run command, so just
+      # be aware!
+      run: |
+        cd ${GITHUB_WORKSPACE}/catkin_ws
+        catkin build --continue toy_example_package
+      shell: bash
+    - name: Get a fortune from a cow
+      # Replace this with a testing script or anything else you need to do.
+      run: /usr/games/fortune | /usr/games/cowsay
+      shell: bash
+
