@@ -27,14 +27,15 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: catkin_ws/src/toy_example_package
-    #- name: Install catkin-tools on Noetic
-    #  run: |
-    #    apt update && apt install -y python3-pip
-    #    pip3 install osrf-pycommon
-    #    apt update && apt install -y python3-wstool python3-catkin-tools
+    - name: Install catkin-tools on Noetic
+      run: |
+        apt update && apt install -y python3-pip
+        pip3 install osrf-pycommon
+        apt update && apt install -y python3-wstool python3-catkin-tools
+      shell: bash
     - name: Build test
       run: |
-        cd catkin_ws
+        cd ${HOME}/catkin_ws
         catkin init
         catkin config --extend "/opt/ros/noetic"
         catkin config --merge-devel
@@ -42,4 +43,4 @@ jobs:
         rosdep install --from-paths src --ignore-src -y --rosdistro noetic
         catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
         catkin build --continue toy_example_package
-     # shell: bash
+     shell: bash
