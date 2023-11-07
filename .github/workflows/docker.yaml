@@ -65,6 +65,8 @@ jobs:
   # The name of the job is "build". All jobs run in SEPARATE containers, so
   # they may run on separate machines and have the workspace wiped inbetween.
   build:
+    # You need to specify the dependency on the previous job (docker) here!
+    needs: docker
     # Run on a github-hosted runner. To specify our own, select:
     # [self-hosted, linux] instead.
     runs-on: ubuntu-latest
