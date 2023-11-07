@@ -34,7 +34,7 @@ jobs:
     #    apt update && apt install -y python3-wstool python3-catkin-tools
     - name: Build test
       run: |
-        cd ${HOME}/catkin_ws
+        cd catkin_ws
         catkin init
         catkin config --extend "/opt/ros/noetic"
         catkin config --merge-devel
