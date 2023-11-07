@@ -27,7 +27,6 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: ${HOME}/catkin_ws/src/toy_example_package
-        submodules: recursive
     #- name: Install catkin-tools on Noetic
     #  run: |
     #    apt update && apt install -y python3-pip
