@@ -1,0 +1,100 @@
+name: Build a Docker Image First
+on:
+  push:
+    # Will trigger on MERGES (or pushes) to main branch.
+    branches:
+    - 'main'
+  pull_request:
+    # Will ALSO trigger any time a PR is opened merging to main.
+    # Specify '*' here to merge on PRs being opened against ANY branch.
+    branches:
+    - 'main'
+
+# This creates environment variables that can be shared between all the jobs.
+env:
+  # This will use docker.io for Dockerhub if empty, so we want to tell it to
+  # use the github one (ghcr.io which stands for... GitHub Container Registry)
+  REGISTRY: ghcr.io
+  # Name the docker image after the repo: github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # First we'll build the docker image in a separate job. Then we actually
+  # build the code in a separate job.
+  docker:
+    runs-on: ubuntu-latest
+    # Note that here we DON'T have a container because github refuses to allow
+    # us to do docker-in-docker. So docker build runs natively on the machine.
+    # The outputs tags gives us an output variabel that can be used in other
+    # jobs. In this case, it's the name of the docker file.
+    outputs:
+      docker_image_name: ${{ steps.meta.outputs.tags }}
+    steps:
+    - name: Check out repository
+      # We still need to do this to actually build the docker file.
+      uses: actions/checkout@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Log into registry ${{ env.REGISTRY }}
+      # Github pre-populates all of these for you! So you don't have to do
+      # anything fancy. Just make sure the env.REGISTRY is set to ghcr.io
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Extract Docker metadata
+      # This just figures out what to tag our docker file as. It's less
+      # complicated than it looks, and you have a lot of flexibility in
+      # how you build tags here.
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+    - name: Build and push docker
+      uses: docker/build-push-action@v4
+      with:
+        context: toy_example_package/docker/
+        file: toy_example_package/docker/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # The name of the job is "build". All jobs run in SEPARATE containers, so
+  # they may run on separate machines and have the workspace wiped inbetween.
+  build:
+    # Run on a github-hosted runner. To specify our own, select:
+    # [self-hosted, linux] instead.
+    runs-on: ubuntu-latest
+    # This will now use the container we build above! The "needs" specifies that
+    # this must be populated and finished by the other job before we can run.
+    container: ${{ needs.build-docker.outputs.docker_image_name }}
+    steps:
+    # Name is optional, uses: specify which ACTION is used (basically github
+    # macros). You can write your own! Use with: to specify extra parameters.
+    - name: Check out repository
+      uses: actions/checkout@v3
+      with:
+        # This path is relative to ${GITHUB_WORKSPACE}. You can also use
+        # "/${HOME}/" if you want but be sure to have the leading slash.
+        path: catkin_ws/src/toy_example_package
+    - name: Setup workspace & install ROS dependencies
+      # We can skip the other setup steps now because it's all in the docker.
+      run: |
+        cd ${GITHUB_WORKSPACE}/catkin_ws
+        catkin init
+        catkin config --extend "/opt/ros/noetic"
+        catkin config --merge-devel
+        rosdep update
+        rosdep install --from-paths src --ignore-src -y --rosdistro noetic
+        catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
+      shell: bash
+    - name: Catkin build
+      # The working directory is reset for each individual run command, so just
+      # be aware!
+      run: |
+        cd ${GITHUB_WORKSPACE}/catkin_ws
+        catkin build --continue toy_example_package
+      shell: bash
