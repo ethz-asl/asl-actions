@@ -24,7 +24,7 @@ jobs:
     # Name is optional, uses: specify which ACTION is used (basically github
     # macros). You can write your own! Use with: to specify extra parameters.
     - name: Check out depository
-    - uses: actions/checkout@v3
+      uses: actions/checkout@v3
       with:
         path: ${HOME}/catkin_ws/src/toy_example_package
         submodules: recursive
